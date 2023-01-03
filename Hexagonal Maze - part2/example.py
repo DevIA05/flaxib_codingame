@@ -47,17 +47,27 @@ def getNeighbor(coord, maze):
     neighbor = []
     for (l, c) in potential_neighbor:
         if 0<=l<heigth and 0<=c<width and maze[l][c] != "#":
-            if(maze[l][c]=="_"): pass
-            else: neighbor.append((l,c))
-        
+            # if(maze[l][c]=="_"): pass
+            # else: neighbor.append((l,c))
+            neighbor.append((l,c))
     return neighbor
 
 #** At the end of the sliding floor
 #** get the coordinates of the last point (terminus) of the sliding floor
 #** p{tuple} predecessor coordinate
 #** sf{tuple} sliding floor coordinate
-def getTerminusFromSlidingFloor(p, sf):
-    pass
+def getTerminusFromSlidingFloor(p, sf, maze):
+    gradient = sf[0]-p[0], sf[1]-p[1]               # determines the slope from the two points 
+                                                    #   Δx = x2 - x1
+                                                    #   Δy = y2 - y1
+    nextNode = sf[0]+gradient[0], sf[1]+gradient[1] # get the next node coordinate in the same direction
+    while True:
+        nextNode = nextNode[0]+gradient[0], nextNode[1]+gradient[1]
+        # Si next node vaut #      alors on retourne le sommet courant
+        # Si c'est un point alors on retourne next node
+        #if(maze[nnx][nny] == "#"): 
+        
+        
 
 
 #** Get route from start to end
@@ -74,17 +84,18 @@ def theWayTo(end, start, p):
         route.append(end)
     return route[::-1]        # reverse the list
     
+def printMaze(maze):
+    print("    0    1    2    3    4    5    6    7    8    9")
+    for i in range(0, len(maze)): print(f"{i} {maze[i]}")
 
 v, p = bfs(maze, (1,1))
 r = theWayTo(end=(2,8), start=(1,1), p=p)
+
 print(" ")
+print("="*25 + " MAZE " + "="*25); printMaze(maze)
+print("\n")
+print("visited"); print(v)
 print(" ")
-print("visited")
-print(v)
+print("predecessor"); print(p)
 print(" ")
-print("predecessor")
-print(p)
-print(" ")
-print(" ")
-print("route")
-print(r)
+print("route"); print(r)

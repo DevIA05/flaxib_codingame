@@ -1,6 +1,10 @@
 import sys
 import math
 
+# def function(arg1: str, arg2: str) -> list[str]:
+#     args = [arg1, arg2]
+#     return args
+
 # Auto-generated code below aims at helping you parse
 # the standard input according to the problem statement.
 def maze_list():
@@ -30,14 +34,14 @@ def bfs(maze, start):  # Breadth-First Search
                 queue.append(n)
                 predecessors[n] = node_coord
     return visited, predecessors
-    
+
 def getNeighbor(coord, maze):
     width, heigth = len(maze[0]), len(maze)
     x, y = coord                                  # x: line, y: column
-    potential_neighbor = [(x+1, y), (x-1, y),     # right, left 
-                          (x, y+1), (x, y-1),     # top, down
-                          (x-1, y-1), (x-1, y+1), # top diagonal left, right
-                          (x+1, y-1), (x+1, y+1)] # bottom diagonal left, right
+    potential_neighbor = [#(x+1, y), (x-1, y),    # bottom, top
+                          (x, y+1), (x, y-1),     # right, left 
+                          (x-1, y-1), (x-1, y+1), # diagonal top left, right
+                          (x+1, y-1), (x+1, y+1)] # diagonal bottom left, right
     #neighbor = [(l, c) for (l, c) in potential_neighbor if  0<=l<heigth and 0<=c<width and maze[l][c] != "#" ] 
     neighbor = []
     for (l, c) in potential_neighbor:
@@ -79,6 +83,20 @@ def theWayTo(end, start, p):
         end = p[end]
         route.append(end)
     return route[::-1]        # reverse the list
+
+def coordToLetter(route):
+    sign = lambda x: (x>0) - (x<0)
+    directions = []    
+    for c in range(0, len(route[:-1])):
+        x, y = route[c+1][0]-route[c][0], route[c+1][1]-route[c][1]
+        if   sign(x) == -1 and sign(y) ==  1 : directions.append("UR")
+        elif sign(x) == -1 and sign(y) == -1 : directions.append("UL")
+        elif sign(x) ==  1 and sign(y) == -1 : directions.append("DL")
+        elif sign(x) ==  1 and sign(y) ==  1 : directions.append("DR")
+        elif sign(x) ==  0 and sign(y) ==  1 : directions.append("R")
+        elif sign(x) ==  0 and sign(y) == -1 : directions.append("L")
+        else: return(print(f"Erreur coordToLetter, iteration: {c}"))
+    return directions
 
 #** Dsiplay the maze with coordinates
 #** maze{list 2D} 

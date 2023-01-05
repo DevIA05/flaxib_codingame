@@ -1,31 +1,31 @@
 import sys
 import math
 
-# def function(arg1: str, arg2: str) -> list[str]:
+# def function(arg1: str, arg2: str) -> list:
 #     args = [arg1, arg2]
 #     return args
 
-# Auto-generated code below aims at helping you parse
-# the standard input according to the problem statement.
-def maze_list():
-    maze = []
-    w, h = [int(i) for i in input().split()]
-    for ligne in range(h):
-        row = input()
-        ligne_list = []
-        for index in range(0, len(row)):
-            cell = row[index]
-            ligne_list.append(cell)
-        maze.append(ligne_list)
-    return maze
+def mazeStrToList(maze_str, width, heigth):
+    maze_list: list = []
+    count:     int  = 0
+    ligne:     list = []
+    for h in range(0, heigth):
+#        ligne.append("#")
+        for w in range(0, width):
+            if(maze_str[count]!="\n"):
+                if(h%2 == 0):
+                    ligne.extend([maze_str[count], "0"])
+
+            count += 1            
+    # Si impair alors ajoute en second et avant dernier '#'        
 
 #** Breadth-First Search
 #** maze{liste 2D} represents the labyrinth
-#** start{tuple} starting point coordinates
+#** start{tuple[int, int]} starting point coordinates
 def bfs(maze, start):  # Breadth-First Search
     queue = [start]                                 # enqueue the source node  
     visited = []                                    # list of nodes visited
-    predecessors = {}                       
+    predecessors = {}              # key: tuple[int, int], value: tuple[int, int]                     
     while len(queue) >  0:
         node_coord = queue.pop(0)                   # remove the node from the start of the queue to process it   
         visited.append(node_coord)                  
@@ -38,6 +38,10 @@ def bfs(maze, start):  # Breadth-First Search
 def getNeighbor(coord, maze):
     width, heigth = len(maze[0]), len(maze)
     x, y = coord                                  # x: line, y: column
+    # potentiel_neighbor = [ 
+    # à doite ou à gauche    
+    #     maze[x][y+1] = 0 ? (x, y+2) : (x, y+1),
+    #     maze[x][y-1] = 0 ? (x, y-2) : (x, y-1),  
     potential_neighbor = [#(x+1, y), (x-1, y),    # bottom, top
                           (x, y+1), (x, y-1),     # right, left 
                           (x-1, y-1), (x-1, y+1), # diagonal top left, right
@@ -53,8 +57,8 @@ def getNeighbor(coord, maze):
 
 #** At the end of the sliding floor
 #** get the coordinates of the last point (terminus) of the sliding floor
-#** p{tuple} predecessor coordinate
-#** sf{tuple} sliding floor coordinate
+#** p{tuple[int, int]} predecessor coordinate
+#** sf{tuple[int, int]} sliding floor coordinate
 def getTerminus(p, sf, maze):
     gradient = sf[0]-p[0], sf[1]-p[1]               # determines the slope from the two points 
                                                     #   Δx = x2 - x1
@@ -72,10 +76,10 @@ def getTerminus(p, sf, maze):
 
 #** Get route from start to end
 #** trace the predecessors back to source
-#** end{tuple} arrival point coordinates
-#** start{tuple} starting point coordinates
-#** p{dict} predecessors of each node
-#** return {list} list sorted from the start 
+#** end{tuple[int, int]} arrival point coordinates
+#** start{tuple[int, int]} starting point coordinates
+#** p{dict[key: tuple, value: tuple]} predecessors of each node
+#** return {list[tuple[int, int]]} list sorted from the start 
 #**               point to the end point including the imprinted nodes 
 def theWayTo(end, start, p):
     route = [end]
@@ -84,6 +88,8 @@ def theWayTo(end, start, p):
         route.append(end)
     return route[::-1]        # reverse the list
 
+#** Convert path from coordinate to direction
+# ** route{list[tuple[int, int]]}
 def coordToLetter(route):
     sign = lambda x: (x>0) - (x<0)
     directions = []    

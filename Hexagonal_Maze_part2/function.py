@@ -5,18 +5,22 @@ import math
 #     args = [arg1, arg2]
 #     return args
 
-def mazeStrToList(maze_str, width, heigth):
+def mazeStrToList(maze_str:str, width:int, heigth:int):
     maze_list: list = []
     count:     int  = 0
     ligne:     list = []
+    letter:    dict[str, tuple[int,int]] = {} 
     for h in range(0, heigth):
-#        ligne.append("#")
         for w in range(0, width):
-            if(maze_str[count]!="\n"):
-                if(h%2 == 0):
-                    ligne.extend([maze_str[count], "0"])
-
-            count += 1            
+            if(h%2 == 0): ligne.extend([maze_str[count], "0"]);
+            else: ligne.extend(['0', maze_str[count]]);
+            letter = saveLetter(n=(h,w), ch=maze_str[count], letter=letter)
+            count += 1
+        if(h%2==0): ligne[width-1]="#"
+        else: ligne[0]="#"
+        maze_list.append(ligne)
+        ligne = []
+    return maze_list, letter
     # Si impair alors ajoute en second et avant dernier '#'        
 
 #** Breadth-First Search
@@ -25,15 +29,23 @@ def mazeStrToList(maze_str, width, heigth):
 def bfs(maze, start):  # Breadth-First Search
     queue = [start]                                 # enqueue the source node  
     visited = []                                    # list of nodes visited
-    predecessors = {}              # key: tuple[int, int], value: tuple[int, int]                     
+    predecessors = {}                               # key: tuple[int, int], value: tuple[int, int]                     
     while len(queue) >  0:
         node_coord = queue.pop(0)                   # remove the node from the start of the queue to process it   
         visited.append(node_coord)                  
         for n in getNeighbor(node_coord, maze):     # queue all its unexplored neighbors (at the end);
-            if n not in predecessors.keys():
+            if n not in predecessors.keys():        # n: tuple[int, int] coordinate of neightbor
                 queue.append(n)
-                predecessors[n] = node_coord
+                predecessors[n] = node_coord               
     return visited, predecessors
+
+#** Saves the coordinates and the name of the keys and door
+def saveLetter(n: tuple[int, int], ch: str, letter: dict) -> dict[str, tuple]:  
+    if(ch.isalpha()):
+        if(ch in letter.keys()): letter[ch].append(n)
+        else: letter[ch] = [n]
+    return letter
+    
 
 def getNeighbor(coord, maze):
     width, heigth = len(maze[0]), len(maze)
@@ -43,10 +55,14 @@ def getNeighbor(coord, maze):
     #     maze[x][y+1] = 0 ? (x, y+2) : (x, y+1),
     #     maze[x][y-1] = 0 ? (x, y-2) : (x, y-1),  
     potential_neighbor = [#(x+1, y), (x-1, y),    # bottom, top
-                          (x, y+1), (x, y-1),     # right, left 
+                          #(x, y+1), (x, y-1),     # right, left
+                          (x, y+2) if maze[x][y+1]=="0" else (x, y+1), # right
+                          (x, y-2) if maze[x][y-1]=="0" else (x, y-1), # left                         
                           (x-1, y-1), (x-1, y+1), # diagonal top left, right
                           (x+1, y-1), (x+1, y+1)] # diagonal bottom left, right
     #neighbor = [(l, c) for (l, c) in potential_neighbor if  0<=l<heigth and 0<=c<width and maze[l][c] != "#" ] 
+    #print(f"node: {coord}, pn: {potential_neighbor}")
+    
     neighbor = []
     for (l, c) in potential_neighbor:
         if 0<=l<heigth and 0<=c<width and maze[l][c] != "#":
@@ -107,5 +123,9 @@ def coordToLetter(route):
 #** Dsiplay the maze with coordinates
 #** maze{list 2D} 
 def printMaze(maze):
-    print("    0    1    2    3    4    5    6    7    8    9")
+    l1 = ""
+    for n in range(0, len(maze[0])): 
+        if(n<=10): l1 += f"    {n}"
+        else: l1 += f"  {n} " 
+    print(l1)
     for i in range(0, len(maze)): print(f"{i} {maze[i]}")

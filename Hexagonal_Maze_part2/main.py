@@ -15,20 +15,25 @@ maze_str = '''##########
 ##a##A####
 ##.##.####
 ###..B..E#
-##########'''
+##########'''.replace('\n', "")
 
-maze = mazeStrToList(maze_str, 10, 10)
-v, p = bfs(maze, (1,1))
+width  = 10
+height = 10
+maze, l = mazeStrToList(maze_str = maze_str, 
+                        width=width, heigth=height)
+#v, p = bfs(maze, (1,1))
 # r = theWayTo(end=(2,8), start=(1,1), p=p)
 # d = coordToLetter(r)
 
-# print(" ")
-# print("="*25 + " MAZE " + "="*25); printMaze(maze)
+print(" ")
+print("="*25 + " MAZE " + "="*25); printMaze(maze)
 # print("\n")
 # print("visited"); print(v)
 # print(" ")
 # print("predecessor"); print(p)
-# print(" ")
+print(" ")
+print("letter"); print(l)
+# print("\n")
 # print("route"); print(r)
 # print("\n")
 # print("directions"); print(d)

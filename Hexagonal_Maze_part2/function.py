@@ -16,7 +16,7 @@ def mazeStrToList(maze_str:str, width:int, heigth:int):
             else: ligne.extend(['0', maze_str[count]]);
             letter = saveLetter(n=(h,w), ch=maze_str[count], letter=letter)
             count += 1
-        if(h%2==0): ligne[width-1]="#"
+        if(h%2==0): ligne[(width*2)-1]="#"
         else: ligne[0]="#"
         maze_list.append(ligne)
         ligne = []
@@ -40,7 +40,11 @@ def bfs(maze, start):  # Breadth-First Search
     return visited, predecessors
 
 #** Saves the coordinates and the name of the keys and door
-def saveLetter(n: tuple[int, int], ch: str, letter: dict) -> dict[str, tuple]:  
+#** n: tuple[int, int]
+#** ch: str
+#** letter: dict
+#** return dict[str, tuple[int, int]]:  
+def saveLetter(n, ch, letter):  
     if(ch.isalpha()):
         if(ch in letter.keys()): letter[ch].append(n)
         else: letter[ch] = [n]
@@ -49,20 +53,13 @@ def saveLetter(n: tuple[int, int], ch: str, letter: dict) -> dict[str, tuple]:
 
 def getNeighbor(coord, maze):
     width, heigth = len(maze[0]), len(maze)
-    x, y = coord                                  # x: line, y: column
-    # potentiel_neighbor = [ 
-    # à doite ou à gauche    
-    #     maze[x][y+1] = 0 ? (x, y+2) : (x, y+1),
-    #     maze[x][y-1] = 0 ? (x, y-2) : (x, y-1),  
-    potential_neighbor = [#(x+1, y), (x-1, y),    # bottom, top
+    x, y = coord          # x: line, y: column  
+    potential_neighbor = [#(x+1, y), (x-1, y),     # bottom, top
                           #(x, y+1), (x, y-1),     # right, left
                           (x, y+2) if maze[x][y+1]=="0" else (x, y+1), # right
                           (x, y-2) if maze[x][y-1]=="0" else (x, y-1), # left                         
-                          (x-1, y-1), (x-1, y+1), # diagonal top left, right
-                          (x+1, y-1), (x+1, y+1)] # diagonal bottom left, right
-    #neighbor = [(l, c) for (l, c) in potential_neighbor if  0<=l<heigth and 0<=c<width and maze[l][c] != "#" ] 
-    #print(f"node: {coord}, pn: {potential_neighbor}")
-    
+                          (x-1, y-1), (x-1, y+1),                      # diagonal top left, right
+                          (x+1, y-1), (x+1, y+1)]                      # diagonal bottom left, right
     neighbor = []
     for (l, c) in potential_neighbor:
         if 0<=l<heigth and 0<=c<width and maze[l][c] != "#":

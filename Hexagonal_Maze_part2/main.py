@@ -6,31 +6,25 @@ sys.path.insert(0, str(folder))
 
 from function import *
 
-maze_str = '''##########
-#S.#######
-###.######
-###.######
-###..#####
-##.#.#####
-##a##A####
-##.##.####
-###..B..E#
-##########'''.replace('\n', "")
+maze_str = '''########
+#S.#####
+##.__A##
+##a##.E#'''.replace('\n', "")
 
-width  = 10
-height = 10
+width  = 8
+height = 4
 maze, l = mazeStrToList(maze_str = maze_str, 
                         width=width, heigth=height)
-#v, p = bfs(maze, (1,1))
+v, p = bfs(maze = maze, start = l["S"][0])
 # r = theWayTo(end=(2,8), start=(1,1), p=p)
 # d = coordToLetter(r)
 
 print(" ")
 print("="*25 + " MAZE " + "="*25); printMaze(maze)
-# print("\n")
-# print("visited"); print(v)
-# print(" ")
-# print("predecessor"); print(p)
+print("\n")
+print("visited"); print(v)
+print(" ")
+print("predecessor"); print(p)
 print(" ")
 print("letter"); print(l)
 # print("\n")

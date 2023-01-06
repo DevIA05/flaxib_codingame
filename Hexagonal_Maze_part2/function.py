@@ -6,22 +6,25 @@ import math
 #     return args
 
 def mazeStrToList(maze_str:str, width:int, heigth:int):
-    maze_list: list = []
-    count:     int  = 0
-    ligne:     list = []
-    letter:    dict[str, tuple[int,int]] = {} 
+    maze_list: list = []  # will contain the elements composing the maze taking into account the hexagonal aspect
+    count:     int  = 0   # browse the elements in maze_str
+    ligne:     list = []  # will contain the elements on a length of width taking into account the hexagonal aspect
+    letter:    dict[str, tuple[int,int]] = {}  # stores entry, exit, keys and doors 
     for h in range(0, heigth):
         for w in range(0, width):
-            if(h%2 == 0): ligne.extend([maze_str[count], "0"]);
-            else: ligne.extend(['0', maze_str[count]]);
-            letter = saveLetter(n=(h,w), ch=maze_str[count], letter=letter)
-            count += 1
+            if(h%2 == 0): 
+                ligne.extend([maze_str[count], "0"]);
+                W = w*2      # position in the horizontal axis in maze_list
+            else: 
+                ligne.extend(['0', maze_str[count]]);
+                W = (w*2)+1  # position in the horizontal axis in maze_list
+            letter = saveLetter(n=(h,W), ch=maze_str[count], letter=letter)
+            count += 1 # moves to the next element in the maze_str object
         if(h%2==0): ligne[(width*2)-1]="#"
         else: ligne[0]="#"
         maze_list.append(ligne)
         ligne = []
     return maze_list, letter
-    # Si impair alors ajoute en second et avant dernier '#'        
 
 #** Breadth-First Search
 #** maze{liste 2D} represents the labyrinth
@@ -46,7 +49,7 @@ def bfs(maze, start):  # Breadth-First Search
 #** return dict[str, tuple[int, int]]:  
 def saveLetter(n, ch, letter):  
     if(ch.isalpha()):
-        if(ch in letter.keys()): letter[ch].append(n)
+        if(ch in letter.keys()): letter[ch].append(n) # if there is the same door at different coordinates
         else: letter[ch] = [n]
     return letter
     
@@ -79,10 +82,10 @@ def getTerminus(p, sf, maze):
     nextNode = sf[0]+gradient[0], sf[1]+gradient[1] # get the next node coordinate in the same direction
     stop = False                                                        # while loop stop condition
     while stop == False:
-        if maze[nextNode[0]][nextNode[1]] == "#":                       # if the next vertex is a wall then:
+        if maze[nextNode[0]][nextNode[1]] == "#" or maze[nextNode[0]][nextNode[1]].isupper():  # ou majuscule                     # if the next vertex is a wall then:
             nextNode = nextNode[0]-gradient[0], nextNode[1]-gradient[1] # we come back to the previous node
             stop = True;
-        elif maze[nextNode[0]][nextNode[1]] == ".":         
+        elif maze[nextNode[0]][nextNode[1]] == "." or maze[nextNode[0]][nextNode[1]].islower(): # ou minuscule       
             stop = True
         else: nextNode = nextNode[0]+gradient[0], nextNode[1]+gradient[1]
     return nextNode
@@ -100,6 +103,11 @@ def theWayTo(end, start, p):
         end = p[end]
         route.append(end)
     return route[::-1]        # reverse the list
+
+def stepByStep(predecessor, letter):
+    # lm = liste des lettres minuscule dans letter trié dans l'ordre alphabétique
+    # boucle: va de S à lm[0] puis lm[0] à lm[0].upper jusqu'à E
+    pass 
 
 #** Convert path from coordinate to direction
 # ** route{list[tuple[int, int]]}

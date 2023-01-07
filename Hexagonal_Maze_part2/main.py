@@ -6,29 +6,38 @@ sys.path.insert(0, str(folder))
 
 from function import *
 
-maze_str = '''########
-#S.#####
-##.__A##
-##a##.E#'''.replace('\n', "")
+maze_str = '''##########
+#S.#######
+###.######
+###.######
+###..#####
+##.#.#####
+##a##A####
+##.##.####
+###..B..E#
+##########'''.replace('\n', "")
+resp = "R DR DR DL DL DL UR UR R DR DR DR DR R R"
 
-width  = 8
-height = 4
-maze, l = mazeStrToList(maze_str = maze_str, 
+# Shape of the maze
+width  = 10
+height = 10
+# Transform the str maze into a list adapted to the hexagonal format
+# and also returns a list of keys, gate, entry point and exit point
+maze, l = mazeStrToList(maze_str = maze_str,          
                         width=width, heigth=height)
-v, p = bfs(maze = maze, start = l["S"][0])
-# r = theWayTo(end=(2,8), start=(1,1), p=p)
-# d = coordToLetter(r)
+# Remove keyless doors and turn them into a wall
+maze, l = dropDoor(letter=l, maze=maze)
+atw = stepByStep(maze = maze, letter = l)
+d = coordToLetter(atw)
+myResp = response(direction=d)
+ca = checkAnswer(resp=resp, myResp=myResp)
+
+mazeWithRecord = recordMouvement(maze=maze, allTheWay=atw)
+mazeWithRecord_str = printMaze(mazeWithRecord) 
 
 print(" ")
-print("="*25 + " MAZE " + "="*25); printMaze(maze)
+print("="*25 + " MAZE " + "="*25); print(mazeWithRecord_str)
 print("\n")
-print("visited"); print(v)
-print(" ")
-print("predecessor"); print(p)
-print(" ")
-print("letter"); print(l)
-# print("\n")
-# print("route"); print(r)
-# print("\n")
-# print("directions"); print(d)
-# #print("terminus"); print(getTerminus((1,2), (1,3), maze))
+print("Le parcours");  print(d)
+print("\n")
+print("="*25 + " REPONSE " + "="*25); print(ca)

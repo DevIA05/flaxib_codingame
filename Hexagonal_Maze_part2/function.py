@@ -1,6 +1,7 @@
 import sys
 import math
 import time
+import re
 
 # def function(arg1: str, arg2: str) -> list:
 #     args = [arg1, arg2]
@@ -14,19 +15,19 @@ def mazeStrToList(maze_str:str, width:int, heigth:int):
     for h in range(0, heigth):
         for w in range(0, width):
             if(h%2 == 0): 
-                #if(w not in [0, width-1] and maze_str[count+1] == "#"): ligne.extend([maze_str[count], "#"]); 
-                #else: ligne.extend([maze_str[count], "0"]);
-                ligne.extend([maze_str[count], "0"]);
+                if(w == width-1): ligne.extend([maze_str[count], "#"]);
+                else:
+                    if(maze_str[count] == "#" or maze_str[count+1] == "#"): ligne.extend([maze_str[count], "#"]); 
+                    else: ligne.extend([maze_str[count], "0"]);
                 W = w*2      # position in the horizontal axis in maze_list
-            else: 
-                #if(w not in [0, width-1] and maze_str[count+1] == "#"): ligne.extend(["#", maze_str[count]]); 
-                #else: ligne.extend(['0', maze_str[count]]);
-                ligne.extend(['0', maze_str[count]]);
+            else:
+                if(w==0): ligne.extend(['#', maze_str[count]]);
+                else:
+                    if(maze_str[count] == "#" or maze_str[count-1] == "#" ): ligne.extend(["#", maze_str[count]]);
+                    else: ligne.extend(['0', maze_str[count]]);
                 W = (w*2)+1  # position in the horizontal axis in maze_list
             letter = saveLetter(n=(h,W), ch=maze_str[count], letter=letter)
             count += 1 # moves to the next element in the maze_str object
-        if(h%2==0): ligne[(width*2)-1]="#"
-        else: ligne[0]="#"
         maze_list.append(ligne)
         ligne = []
     return maze_list, letter
@@ -127,19 +128,24 @@ def dropDoor(maze, letter):
 #** to the end point
 def stepByStep(maze, letter): # list[list[tuple(int, int)]], dict[str, tuple[int, int]] -> list[tuple[int, int]]
     allTheWay = []
-    keys = sorted([k for k in letter.keys() if k.islower()])
-    v, p = bfs(maze, start = letter['S'][0])
-    r = theWayTo(end=letter[keys[0]][0], start=letter['S'][0], p=p)[:-1] # we do not take the last value which is the end point 
-                                                                         #   since it will be added again as a starting point later
-    allTheWay += r
-    for k in keys:
-        v, p = bfs(maze, start = letter[k][0])
-        r = theWayTo(end=letter[k.upper()][0], 
-                     start=letter[k][0], p=p)[:-1]
+    if(len(letter) > 2):
+        keys = sorted([k for k in letter.keys() if k.islower()])
+        v, p = bfs(maze, start = letter['S'][0])
+        r = theWayTo(end=letter[keys[0]][0], start=letter['S'][0], p=p)[:-1] # we do not take the last value which is the end point 
+                                                                             #   since it will be added again as a starting point later
         allTheWay += r
-    v, p = bfs(maze, start = letter[keys[-1].upper()][0])
-    r = theWayTo(end=letter['E'][0], start=letter[keys[-1].upper()][0], p=p)
-    allTheWay += r
+        for k in keys:
+            v, p = bfs(maze, start = letter[k][0])
+            r = theWayTo(end=letter[k.upper()][0], 
+                         start=letter[k][0], p=p)[:-1]
+            allTheWay += r
+        v, p = bfs(maze, start = letter[keys[-1].upper()][0])
+        r = theWayTo(end=letter['E'][0], start=letter[keys[-1].upper()][0], p=p)
+        allTheWay += r
+    else:
+        v, p = bfs(maze, start = letter['S'][0])
+        r = theWayTo(end=letter['E'][0], start=letter['S'][0], p=p) 
+        allTheWay += r
     return allTheWay
 
 #** Convert path from coordinate to direction
@@ -162,21 +168,21 @@ def coordToLetter(route): # -> list[str]
 #** maze{list 2D} 
 def printMaze(maze):
     maze_str = ""
+    ligne = 0
+    l1 = ["  "+str(n) if n <= 10 else " "+str(n) for n in range(0, len(maze)*2)]
+    maze_str += "" + ''.join(l1) + "\n"
     for l in maze:
-        l_str = ' '.join(l)
-        maze_str += l_str + "\n"
+        l_str = '  '.join(l)
+        maze_str += str(ligne) + " " + l_str + "\n"
+        ligne += 1
     return maze_str
-    # l1 = ""
-    # for n in range(0, len(maze[0])): 
-    #     if(n<=10): l1 += f"    {n}"
-    #     else: l1 += f"  {n} " 
-    # print(l1)
-    # for i in range(0, len(maze)): print(f"{i} {maze[i]}")
+
 def recordMouvement(maze, allTheWay):
     i = 0
     for x, y in allTheWay:
         i += 1
-        maze[x][y] = "X"
+        if(bool(re.search(r'\d', maze[x][y]))): maze[x][y] = maze[x][y] + "," + str(i)  
+        else: maze[x][y] = str(i)
     return maze 
 
 # Concatenate directions from list direction to have a str

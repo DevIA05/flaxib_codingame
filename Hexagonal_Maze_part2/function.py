@@ -1,5 +1,6 @@
 import sys
 import math
+import time
 
 # def function(arg1: str, arg2: str) -> list:
 #     args = [arg1, arg2]
@@ -13,9 +14,13 @@ def mazeStrToList(maze_str:str, width:int, heigth:int):
     for h in range(0, heigth):
         for w in range(0, width):
             if(h%2 == 0): 
+                #if(w not in [0, width-1] and maze_str[count+1] == "#"): ligne.extend([maze_str[count], "#"]); 
+                #else: ligne.extend([maze_str[count], "0"]);
                 ligne.extend([maze_str[count], "0"]);
                 W = w*2      # position in the horizontal axis in maze_list
             else: 
+                #if(w not in [0, width-1] and maze_str[count+1] == "#"): ligne.extend(["#", maze_str[count]]); 
+                #else: ligne.extend(['0', maze_str[count]]);
                 ligne.extend(['0', maze_str[count]]);
                 W = (w*2)+1  # position in the horizontal axis in maze_list
             letter = saveLetter(n=(h,W), ch=maze_str[count], letter=letter)
@@ -26,7 +31,8 @@ def mazeStrToList(maze_str:str, width:int, heigth:int):
         ligne = []
     return maze_list, letter
 
-#** Breadth-First Search
+#** Breadth-First Search 
+#** we retrieve the neighbors of all box that are not walls
 #** maze{liste 2D} represents the labyrinth
 #** start{tuple[int, int]} starting point coordinates
 def bfs(maze, start):  # Breadth-First Search
@@ -52,7 +58,6 @@ def saveLetter(n, ch, letter):
         if(ch in letter.keys()): letter[ch].append(n) # if there is the same door at different coordinates
         else: letter[ch] = [n]
     return letter
-    
 
 def getNeighbor(coord, maze):
     width, heigth = len(maze[0]), len(maze)
@@ -80,12 +85,12 @@ def getTerminus(p, sf, maze):
                                                     #   Δx = x2 - x1
                                                     #   Δy = y2 - y1
     nextNode = sf[0]+gradient[0], sf[1]+gradient[1] # get the next node coordinate in the same direction
-    stop = False                                                        # while loop stop condition
+    stop = False                                    # while loop stop condition
     while stop == False:
-        if maze[nextNode[0]][nextNode[1]] == "#" or maze[nextNode[0]][nextNode[1]].isupper():  # ou majuscule                     # if the next vertex is a wall then:
-            nextNode = nextNode[0]-gradient[0], nextNode[1]-gradient[1] # we come back to the previous node
+        if maze[nextNode[0]][nextNode[1]] == "#" or maze[nextNode[0]][nextNode[1]].isupper(): # if the next vertex is a wall or a door then:
+            nextNode = nextNode[0]-gradient[0], nextNode[1]-gradient[1]                       #    we come back to the previous node
             stop = True;
-        elif maze[nextNode[0]][nextNode[1]] == "." or maze[nextNode[0]][nextNode[1]].islower(): # ou minuscule       
+        elif maze[nextNode[0]][nextNode[1]] == "." or maze[nextNode[0]][nextNode[1]].islower():
             stop = True
         else: nextNode = nextNode[0]+gradient[0], nextNode[1]+gradient[1]
     return nextNode
@@ -104,14 +109,42 @@ def theWayTo(end, start, p):
         route.append(end)
     return route[::-1]        # reverse the list
 
-def stepByStep(predecessor, letter):
-    # lm = liste des lettres minuscule dans letter trié dans l'ordre alphabétique
-    # boucle: va de S à lm[0] puis lm[0] à lm[0].upper jusqu'à E
-    pass 
+#** Removes keyless doors and replaces them with walls
+#** letter{dict[str, tuple[int, int]]}
+#** maze{list[list[str]]} 
+def dropDoor(maze, letter):  
+    for d in list(letter.keys()): #  use list to force a copy of the keys to thus remove a key from the dictionary 
+                                  #  without the iteration being impacted
+        if(d not in ["S", "E"]):
+            if(d.isupper() and d.lower() not in letter.keys()):
+                x, y = letter[d][0][0], letter[d][0][1]
+                maze[x][y] = "#"
+                del letter[d]
+    return maze, letter
+
+#** Performs the path in width from the starting point to the first key, 
+#** from key c to the corresponding door, and ends with the path from the door 
+#** to the end point
+def stepByStep(maze, letter): # list[list[tuple(int, int)]], dict[str, tuple[int, int]] -> list[tuple[int, int]]
+    allTheWay = []
+    keys = sorted([k for k in letter.keys() if k.islower()])
+    v, p = bfs(maze, start = letter['S'][0])
+    r = theWayTo(end=letter[keys[0]][0], start=letter['S'][0], p=p)[:-1] # we do not take the last value which is the end point 
+                                                                         #   since it will be added again as a starting point later
+    allTheWay += r
+    for k in keys:
+        v, p = bfs(maze, start = letter[k][0])
+        r = theWayTo(end=letter[k.upper()][0], 
+                     start=letter[k][0], p=p)[:-1]
+        allTheWay += r
+    v, p = bfs(maze, start = letter[keys[-1].upper()][0])
+    r = theWayTo(end=letter['E'][0], start=letter[keys[-1].upper()][0], p=p)
+    allTheWay += r
+    return allTheWay
 
 #** Convert path from coordinate to direction
 # ** route{list[tuple[int, int]]}
-def coordToLetter(route):
+def coordToLetter(route): # -> list[str]
     sign = lambda x: (x>0) - (x<0)
     directions = []    
     for c in range(0, len(route[:-1])):
@@ -128,9 +161,28 @@ def coordToLetter(route):
 #** Dsiplay the maze with coordinates
 #** maze{list 2D} 
 def printMaze(maze):
-    l1 = ""
-    for n in range(0, len(maze[0])): 
-        if(n<=10): l1 += f"    {n}"
-        else: l1 += f"  {n} " 
-    print(l1)
-    for i in range(0, len(maze)): print(f"{i} {maze[i]}")
+    maze_str = ""
+    for l in maze:
+        l_str = ' '.join(l)
+        maze_str += l_str + "\n"
+    return maze_str
+    # l1 = ""
+    # for n in range(0, len(maze[0])): 
+    #     if(n<=10): l1 += f"    {n}"
+    #     else: l1 += f"  {n} " 
+    # print(l1)
+    # for i in range(0, len(maze)): print(f"{i} {maze[i]}")
+def recordMouvement(maze, allTheWay):
+    i = 0
+    for x, y in allTheWay:
+        i += 1
+        maze[x][y] = "X"
+    return maze 
+
+# Concatenate directions from list direction to have a str
+def response(direction): # list[str] -> str
+    return ' '.join(direction)
+
+def checkAnswer(resp, myResp): # str, str -> Boolean
+    return resp == myResp
+    

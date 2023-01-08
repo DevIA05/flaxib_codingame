@@ -134,26 +134,29 @@ def door_wall(maze, letter): # list[list[str]], dict[str, tuple[int, int]] -> li
             newMaze[x][y] = '#'
     return newMaze
 
-def open_door(maze, keyring):
-    pass
-    
-    
+# Turns doors into free space
+def door_freeSpace(maze, door): # list[list[str]], list[tuple[int, int]]  
+    for dx, dy in door:
+        maze[dx][dy] = "."    
 
-#** Performs the path in width from the starting point to the first key, 
-#** from key c to the corresponding door, and ends with the path from the door 
-#** to the end point
+#** Performs breadth-first search on the different elements of the labyrinth
+#** I get the predecessors from breadth-first search.
+#** The doors being walls, if we need a key we go to recover it by going back 
+#** to the predecessors.
+#** then we transform the door corresponding to the key into an free space 
 def stepByStep(maze, letter): # list[list[tuple(int, int)]], dict[str, tuple[int, int]] -> list[tuple[int, int]]
     allTheWay = []
     keys = ['S'] + sorted([k for k in letter.keys() if k.islower()]) + ["E"]
     for i in range(0, len(keys[:-1])):
         s = letter[keys[i]][0]; e = letter[keys[i+1]][0]
-        v, p = bfs(maze, start = s)
-        if(letter['E'][0] not in p.keys()):                # if can't we already access the exit 
-            r = theWayTo(end=e, start=s, p=p)[:-1]         # we do not take the last value which is the end point 
-            allTheWay += r
-            dx, dy = letter[keys[i+1].upper()][0]
-            maze[dx][dy] = "."
-        else:                                              # if we can already access the exit
+        v, p = bfs(maze, start = s)                          # I get the predecessors from breadth-first search
+        if(letter['E'][0] not in p.keys()):                  # if can't we already access the exit 
+            r = theWayTo(end=e, start=s, p=p)[:-1]              # the doors being walls, if we need a key we go to recover 
+                                                                #   it by going back to the predecessors.
+                                                                #   we do not take the last value which is the end point 
+            allTheWay += r  
+            door_freeSpace(maze, letter[keys[i+1].upper()])     # we transform the door corresponding to the key into an free space 
+        else:                                                # if we can already access the exit
             r = theWayTo(end=letter['E'][0], start=s, p=p)
             allTheWay += r
             break;

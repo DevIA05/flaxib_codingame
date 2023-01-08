@@ -147,6 +147,7 @@ def door_freeSpace(maze, door): # list[list[str]], list[tuple[int, int]]
 def stepByStep(maze, letter): # list[list[tuple(int, int)]], dict[str, tuple[int, int]] -> list[tuple[int, int]]
     allTheWay = []
     keys = ['S'] + sorted([k for k in letter.keys() if k.islower()]) + ["E"]
+    maze[letter['S'][0][0]][letter['S'][0][1]] = "."
     for i in range(0, len(keys[:-1])):
         s = letter[keys[i]][0]; e = letter[keys[i+1]][0]
         v, p = bfs(maze, start = s)                          # I get the predecessors from breadth-first search
@@ -189,6 +190,7 @@ def printMaze(maze):
         l_str = '  '.join(l)
         maze_str += str(ligne) + " " + l_str + "\n"
         ligne += 1
+        
     return maze_str
 
 def recordMouvement(maze, allTheWay):

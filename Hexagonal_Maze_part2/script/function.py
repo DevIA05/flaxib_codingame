@@ -4,11 +4,7 @@ import time
 import re
 import copy
 
-# def function(arg1: str, arg2: str) -> list:
-#     args = [arg1, arg2]
-#     return args
-
-def mazeStrToList(maze_str:str, width:int, heigth:int):
+def mazeStrToList(maze_str:str, width:int, heigth:int)-> tuple[list[list[str]], dict[str, tuple[int, int]]]: 
     maze_list: list = []  # will contain the elements composing the maze taking into account the hexagonal aspect
     count:     int  = 0   # browse the elements in maze_str
     ligne:     list = []  # will contain the elements on a length of width taking into account the hexagonal aspect
@@ -31,13 +27,13 @@ def mazeStrToList(maze_str:str, width:int, heigth:int):
             count += 1 # moves to the next element in the maze_str object
         maze_list.append(ligne)
         ligne = []
-    return maze_list, letter
+    return(maze_list, letter)
 
 #** Breadth-First Search 
 #** we retrieve the neighbors of all box that are not walls
 #** maze{liste 2D} represents the labyrinth
 #** start{tuple[int, int]} starting point coordinates
-def bfs(maze, start):  # Breadth-First Search
+def bfs(maze: list[list[str]], start: tuple[int, int]) -> tuple[list[tuple[int, int]], dict[tuple[int, int], tuple[int, int]]]:
     queue = [start]                                 # enqueue the source node  
     visited = []                                    # list of nodes visited
     predecessors = {}                               # key: tuple[int, int], value: tuple[int, int]                     
@@ -48,20 +44,22 @@ def bfs(maze, start):  # Breadth-First Search
             if n not in predecessors.keys():        # n: tuple[int, int] coordinate of neightbor
                 queue.append(n)
                 predecessors[n] = node_coord               
-    return visited, predecessors
+    return(visited, predecessors)
 
 #** Saves the coordinates and the name of the keys and door
 #** n: tuple[int, int]
 #** ch: str
 #** letter: dict
-#** return dict[str, tuple[int, int]]:  
+#** return dict[str, list[tuple[int, int]]]
 def saveLetter(n, ch, letter):  
     if(ch.isalpha()):
         if(ch in letter.keys()): letter[ch].append(n) # if there is the same door at different coordinates
         else: letter[ch] = [n]
     return letter
 
-def getNeighbor(coord, maze):
+#** Get neighboring node
+#** Get coordinate neighboring node and keep those who are not walls
+def getNeighbor(coord: tuple[int, int], maze: list[list[str]]):
     width, heigth = len(maze[0]), len(maze)
     x, y = coord          # x: line, y: column  
     potential_neighbor = [#(x+1, y), (x-1, y),     # bottom, top
@@ -80,9 +78,10 @@ def getNeighbor(coord, maze):
 
 #** At the end of the sliding floor
 #** get the coordinates of the last point (terminus) of the sliding floor
-#** p{tuple[int, int]} predecessor coordinate
-#** sf{tuple[int, int]} sliding floor coordinate
-def getTerminus(p, sf, maze):
+#** p predecessor coordinate of sliding floor
+#** sf sliding floor coordinate
+#** return coordinate terminus
+def getTerminus(p: tuple[int, int], sf: tuple[int, int], maze: list[list[str]]) -> tuple[int, int]:
     gradient = sf[0]-p[0], sf[1]-p[1]               # determines the slope from the two points 
                                                     #   Δx = x2 - x1
                                                     #   Δy = y2 - y1
@@ -100,22 +99,21 @@ def getTerminus(p, sf, maze):
 
 #** Get route from start to end
 #** trace the predecessors back to source
-#** end{tuple[int, int]} arrival point coordinates
-#** start{tuple[int, int]} starting point coordinates
-#** p{dict[key: tuple, value: tuple]} predecessors of each node
-#** return {list[tuple[int, int]]} list sorted from the start 
-#**               point to the end point including the imprinted nodes 
-def theWayTo(end, start, p):
+#** end    arrival point coordinates
+#** start  starting point coordinates
+#** p      predecessors of each node
+#** return list sorted from the start
+def theWayTo(end: tuple[int, int], start: tuple[int, int], p: dict[tuple, tuple]):
     route = [end]
+    # trace the predecessors back to source
     while end != start:
         end = p[end]
         route.append(end)
-    return route[::-1]        # reverse the list
+    return route[::-1] # reverse the list, the list contains the points from the end 
+                       #   to the beginning
 
 #** Removes keyless doors and replaces them with walls
-#** letter{dict[str, tuple[int, int]]}
-#** maze{list[list[str]]} 
-def dropDoor(maze, letter):  
+def dropDoor(maze: list[list[str]], letter: dict[str, list[tuple[int, int]]]) -> tuple[list[list[str]], dict[str, list[tuple[int, int]]]]:  
     for d in list(letter.keys()): #  use list to force a copy of the keys to thus remove a key from the dictionary 
                                   #  without the iteration being impacted
         if(d not in ["S", "E"]):
@@ -123,7 +121,7 @@ def dropDoor(maze, letter):
                 x, y = letter[d][0][0], letter[d][0][1]
                 maze[x][y] = "#"
                 del letter[d]
-    return maze, letter
+    return (maze, letter)
 
 # Turn doors into walls
 def door_wall(maze, letter): # list[list[str]], dict[str, tuple[int, int]] -> list[list[str]]

@@ -2,6 +2,7 @@ import sys
 import math
 import time
 import re
+import copy
 
 # def function(arg1: str, arg2: str) -> list:
 #     args = [arg1, arg2]
@@ -88,10 +89,11 @@ def getTerminus(p, sf, maze):
     nextNode = sf[0]+gradient[0], sf[1]+gradient[1] # get the next node coordinate in the same direction
     stop = False                                    # while loop stop condition
     while stop == False:
-        if maze[nextNode[0]][nextNode[1]] == "#" or maze[nextNode[0]][nextNode[1]].isupper(): # if the next vertex is a wall or a door then:
-            nextNode = nextNode[0]-gradient[0], nextNode[1]-gradient[1]                       #    we come back to the previous node
+        node = maze[nextNode[0]][nextNode[1]]
+        if node == '#' or (node.isupper() and node != 'E'):                                    # if the next vertex is a wall or a door then:
+            nextNode = nextNode[0]-gradient[0], nextNode[1]-gradient[1]    #    we come back to the previous node
             stop = True;
-        elif maze[nextNode[0]][nextNode[1]] == "." or maze[nextNode[0]][nextNode[1]].islower():
+        elif node == '.' or node.islower() or node == 'E':
             stop = True
         else: nextNode = nextNode[0]+gradient[0], nextNode[1]+gradient[1]
     return nextNode
@@ -169,7 +171,7 @@ def coordToLetter(route): # -> list[str]
 def printMaze(maze):
     maze_str = ""
     ligne = 0
-    l1 = ["  "+str(n) if n <= 10 else " "+str(n) for n in range(0, len(maze)*2)]
+    l1 = ["  "+str(n) if n <= 10 else " "+str(n) for n in range(0, len(maze[0]))]
     maze_str += "" + ''.join(l1) + "\n"
     for l in maze:
         l_str = '  '.join(l)
@@ -179,11 +181,12 @@ def printMaze(maze):
 
 def recordMouvement(maze, allTheWay):
     i = 0
+    mazeWithRecord = copy.deepcopy(maze)
     for x, y in allTheWay:
         i += 1
-        if(bool(re.search(r'\d', maze[x][y]))): maze[x][y] = maze[x][y] + "," + str(i)  
-        else: maze[x][y] = str(i)
-    return maze 
+        if(bool(re.search(r'\d', mazeWithRecord[x][y]))): mazeWithRecord[x][y] = mazeWithRecord[x][y] + "," + str(i)  
+        else: mazeWithRecord[x][y] = str(i)
+    return mazeWithRecord
 
 # Concatenate directions from list direction to have a str
 def response(direction): # list[str] -> str
@@ -191,4 +194,3 @@ def response(direction): # list[str] -> str
 
 def checkAnswer(resp, myResp): # str, str -> Boolean
     return resp == myResp
-    

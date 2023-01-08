@@ -125,29 +125,38 @@ def dropDoor(maze, letter):
                 del letter[d]
     return maze, letter
 
+# Turn doors into walls
+def door_wall(maze, letter): # list[list[str]], dict[str, tuple[int, int]] -> list[list[str]]
+    newMaze = copy.deepcopy(maze)
+    doors = [k for k in letter.keys() if(k.isupper() and k not in ['S', 'E'])]
+    for d in doors:
+        for x, y in letter[d]:
+            newMaze[x][y] = '#'
+    return newMaze
+
+def open_door(maze, keyring):
+    pass
+    
+    
+
 #** Performs the path in width from the starting point to the first key, 
 #** from key c to the corresponding door, and ends with the path from the door 
 #** to the end point
 def stepByStep(maze, letter): # list[list[tuple(int, int)]], dict[str, tuple[int, int]] -> list[tuple[int, int]]
     allTheWay = []
-    if(len(letter) > 2):
-        keys = sorted([k for k in letter.keys() if k.islower()])
-        v, p = bfs(maze, start = letter['S'][0])
-        r = theWayTo(end=letter[keys[0]][0], start=letter['S'][0], p=p)[:-1] # we do not take the last value which is the end point 
-                                                                             #   since it will be added again as a starting point later
-        allTheWay += r
-        for k in keys:
-            v, p = bfs(maze, start = letter[k][0])
-            r = theWayTo(end=letter[k.upper()][0], 
-                         start=letter[k][0], p=p)[:-1]
+    keys = ['S'] + sorted([k for k in letter.keys() if k.islower()]) + ["E"]
+    for i in range(0, len(keys[:-1])):
+        s = letter[keys[i]][0]; e = letter[keys[i+1]][0]
+        v, p = bfs(maze, start = s)
+        if(letter['E'][0] not in p.keys()):                # if can't we already access the exit 
+            r = theWayTo(end=e, start=s, p=p)[:-1]         # we do not take the last value which is the end point 
             allTheWay += r
-        v, p = bfs(maze, start = letter[keys[-1].upper()][0])
-        r = theWayTo(end=letter['E'][0], start=letter[keys[-1].upper()][0], p=p)
-        allTheWay += r
-    else:
-        v, p = bfs(maze, start = letter['S'][0])
-        r = theWayTo(end=letter['E'][0], start=letter['S'][0], p=p) 
-        allTheWay += r
+            dx, dy = letter[keys[i+1].upper()][0]
+            maze[dx][dy] = "."
+        else:                                              # if we can already access the exit
+            r = theWayTo(end=letter['E'][0], start=s, p=p)
+            allTheWay += r
+            break;
     return allTheWay
 
 #** Convert path from coordinate to direction

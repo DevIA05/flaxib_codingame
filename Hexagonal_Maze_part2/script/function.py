@@ -113,17 +113,6 @@ def theWayTo(end: tuple[int, int], start: tuple[int, int], p: dict[tuple, tuple]
     return route[::-1] # reverse the list, the list contains the points from the end 
                        #   to the beginning
 
-#** Removes keyless doors and replaces them with walls
-def dropDoor(maze: list[list[str]], letter: dict[str, list[tuple[int, int]]]) -> tuple[list[list[str]], dict[str, list[tuple[int, int]]]]:  
-    for d in list(letter.keys()): #  use list to force a copy of the keys to thus remove a key from the dictionary 
-                                  #  without the iteration being impacted
-        if(d not in ["S", "E"]):
-            if(d.isupper() and d.lower() not in letter.keys()):
-                x, y = letter[d][0][0], letter[d][0][1]
-                maze[x][y] = "#"
-                del letter[d]
-    return (maze, letter)
-
 # Turn doors into walls
 def door_wall(maze, letter): # list[list[str]], dict[str, tuple[int, int]] -> list[list[str]]
     newMaze = copy.deepcopy(maze)

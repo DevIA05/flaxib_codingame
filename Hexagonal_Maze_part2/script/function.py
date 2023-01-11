@@ -4,43 +4,49 @@ import time
 import re
 import copy
 
+# Coding Game -> comment line 15,16, 22, 33, 34
+
 #** Transform the string maze into a list, and retrieves the coordinates of each letter
-def mazeStrToList(maze_str:str, width:int, heigth:int)-> tuple[list[list[str]], dict[str, tuple[int, int]]]: 
-    maze_list: list = []  # will contain the elements composing the maze taking into account the hexagonal aspect
-    count:     int  = 0   # browse the elements in maze_str
-    ligne:     list = []  # will contain the elements on a length of width taking into account the hexagonal aspect
-    letter:    dict[str, tuple[int,int]] = {}  # stores entry, exit, keys and doors 
-    for h in range(0, heigth):
-        for w in range(0, width):
-            if(h%2 == 0): 
-                if(w == width-1): ligne.extend([maze_str[count], "#"]);
-                else:
-                    if(maze_str[count] == "#" or maze_str[count+1] == "#"): ligne.extend([maze_str[count], "#"]); 
-                    else: ligne.extend([maze_str[count], "0"]);
-                W = w*2      # position in the horizontal axis in maze_list
-            else:
-                if(w==0): ligne.extend(['#', maze_str[count]]);
-                else:
-                    if(maze_str[count] == "#" or maze_str[count-1] == "#" ): ligne.extend(["#", maze_str[count]]);
-                    else: ligne.extend(['0', maze_str[count]]);
-                W = (w*2)+1  # position in the horizontal axis in maze_list
-            letter = saveLetter(n=(h,W), ch=maze_str[count], letter=letter)
-            count += 1 # moves to the next element in the maze_str object
-        maze_list.append(ligne)
-        ligne = []
-    return(maze_list, letter)
+#** maze_str: str, 
+#** width:int, heigth:int)-> tuple[list[list[str]], dict[str, tuple[int, int]]]: 
+#** return tuple[list[list[str]], dict[str, tuple[int, int]]] 
+def getMaze(file):
+    #width, height = [int(i) for i in input().split()]; 
+    f = open("Hexagonal_Maze_part2/maze/" + file, "r")
+    sh = f.readline()[:-1]; lsh = sh.split(" "); width = int(lsh[0]); height = int(lsh[1]) 
+    width = width * 2
+    letter = {}
+    maze = []
+    for h in range(0, height):
+        ligne = ["#"]*width
+        row = f.readline()[:-1] #input()
+        if(h%2 ==0): s = 0; hexa = 1
+        else: s = 1; hexa = -1
+        for w in range(s, width, 2):
+            index = int((w+hexa)/2)
+            ligne[w] = row[index]
+            saveLetter(n = (h, w), ch = row[index], letter = letter)         
+            if(index+hexa not in [-1, width/2]):
+                if(row[index]!= "#" and row[index+hexa]!="#"):
+                    ligne[w+hexa] = "0"
+        maze.append(ligne)
+    resp = f.readline(); f.close() 
+    return maze, letter, resp
+    #return maze, letter
 
 #** Breadth-First Search 
 #** we retrieve the neighbors of all box that are not walls
-#** maze: represents the labyrinth
-#** start: starting point coordinates
-def bfs(maze: list[list[str]], start: tuple[int, int]) -> tuple[list[tuple[int, int]], dict[tuple[int, int], tuple[int, int]]]:
+#** maze{list[list[str]]]} represents the labyrinth
+#** start{tuple[int, int]}: starting point coordinates
+# ** return list[tuple[int, int]] and dict{tuple[int, int], tuple[int, int]}
+def bfs(maze, start):
     queue = [start]                                 # enqueue the source node  
     visited = []                                    # list of nodes visited
     predecessors = {}                               # key: tuple[int, int], value: tuple[int, int]                     
+    val = 0
     while len(queue) >  0:
         node_coord = queue.pop(0)                   # remove the node from the start of the queue to process it   
-        visited.append(node_coord)                  
+        visited.append(node_coord)                 
         for n in getNeighbor(node_coord, maze):     # queue all its unexplored neighbors (at the end);
             if n not in predecessors.keys():        # n: tuple[int, int] coordinate of neightbor
                 queue.append(n)
@@ -60,7 +66,7 @@ def saveLetter(n, ch, letter):
 
 #** Get neighboring node
 #** Get coordinate neighboring node and keep those who are not walls
-def getNeighbor(coord: tuple[int, int], maze: list[list[str]]):
+def getNeighbor(coord, maze):
     width, heigth = len(maze[0]), len(maze)
     x, y = coord          # x: line, y: column  
     potential_neighbor = [#(x+1, y), (x-1, y),     # bottom, top
@@ -79,10 +85,11 @@ def getNeighbor(coord: tuple[int, int], maze: list[list[str]]):
 
 #** At the end of the sliding floor
 #** get the coordinates of the last point (terminus) of the sliding floor
-#** p predecessor coordinate of sliding floor
-#** sf sliding floor coordinate
-#** return coordinate terminus
-def getTerminus(p: tuple[int, int], sf: tuple[int, int], maze: list[list[str]]) -> tuple[int, int]:
+#** p: tuple[int, int] predecessor coordinate of sliding floor
+#** sf: tuple[int, int] sliding floor coordinate
+#** maze: list[list[str]]
+#** return: tuple[int, int] coordinate terminus
+def getTerminus(p, sf, maze):
     gradient = sf[0]-p[0], sf[1]-p[1]               # determines the slope from the two points 
                                                     #   Δx = x2 - x1
                                                     #   Δy = y2 - y1
@@ -100,11 +107,11 @@ def getTerminus(p: tuple[int, int], sf: tuple[int, int], maze: list[list[str]]) 
 
 #** Get route from start to end
 #** trace the predecessors back to source
-#** end    arrival point coordinates
-#** start  starting point coordinates
-#** p      predecessors of each node
+#** end  : tuple[int, int]    arrival point coordinates
+#** start: tuple[int, int]    starting point coordinates
+#** p    : dict[tuple, tuple] predecessors of each node
 #** return list sorted from the start
-def theWayTo(end: tuple[int, int], start: tuple[int, int], p: dict[tuple, tuple]):
+def theWayTo(end, start, p ):
     route = [end]
     # trace the predecessors back to source
     while end != start:
@@ -115,12 +122,10 @@ def theWayTo(end: tuple[int, int], start: tuple[int, int], p: dict[tuple, tuple]
 
 # Turn doors into walls
 def door_wall(maze, letter): # list[list[str]], dict[str, tuple[int, int]] -> list[list[str]]
-    newMaze = copy.deepcopy(maze)
     doors = [k for k in letter.keys() if(k.isupper() and k not in ['S', 'E'])]
     for d in doors:
         for x, y in letter[d]:
-            newMaze[x][y] = '#'
-    return newMaze
+            maze[x][y] = '#'
 
 # Turns doors into free space
 def door_freeSpace(maze, door): # list[list[str]], list[tuple[int, int]]  
@@ -152,8 +157,10 @@ def stepByStep(maze, letter): # list[list[tuple(int, int)]], dict[str, tuple[int
     return allTheWay
 
 #** Convert path from coordinate to direction
-def coordToLetter(route: list[tuple[int, int]]) -> list[str] :
-    sign = lambda x: (x>0) - (x<0)
+#** route: list[tuple[int, int]]) 
+#** return list[str] 
+def coordToLetter(route):
+    sign = lambda x: (x>0) - (x<0) # will determine the direction based on the sign of x and y
     directions = []    
     for c in range(0, len(route[:-1])):
         x, y = route[c+1][0]-route[c][0], route[c+1][1]-route[c][1]
@@ -179,7 +186,7 @@ def printMaze(maze):
         ligne += 1
     return maze_str
 
-# Number each passage in the labyrinth
+#** Each step is represented by a number
 def recordMouvement(maze, allTheWay):
     i = 0
     mazeWithRecord = copy.deepcopy(maze)
@@ -189,9 +196,10 @@ def recordMouvement(maze, allTheWay):
         else: mazeWithRecord[x][y] = str(i)
     return mazeWithRecord
 
-# Concatenate directions from list direction to have a str
+#** Concatenate directions from list direction to have a str
 def response(direction): # list[str] -> str
     return ' '.join(direction)
 
+#** Checks if the found answer matches the expected answer
 def checkAnswer(resp, myResp): # str, str -> Boolean
     return resp == myResp

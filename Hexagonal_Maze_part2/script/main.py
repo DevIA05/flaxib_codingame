@@ -9,7 +9,7 @@ from function import *
 import copy
 
 # pick up the labyrinth to go through it
-file = "maze11.txt"
+file = "maze01.txt"
 
 #####################################################################
 ########################## MAIN #####################################

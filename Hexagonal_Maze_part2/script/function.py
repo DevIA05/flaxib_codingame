@@ -44,19 +44,20 @@ def getMaze(file):
     #return maze, letter
 
 #** Breadth-First Search 
-#** we retrieve the neighbors of all box that are not walls
+#** Starts from a source node, then it lists all the neighbors 
+#** (that are not walls) of the source, to then explore them one by one.
+#** https://fr.wikipedia.org/wiki/Algorithme_de_parcours_en_largeur
 #** maze{list[list[str]]]} represents the labyrinth
 #** start{tuple[int, int]}: starting point coordinates
 # ** return list[tuple[int, int]] and dict{tuple[int, int], tuple[int, int]}
 def bfs(maze, start):
-    queue = [start]                                 # enqueue the source node  
+    queue = [start]                                 # will contain the unexplored neighbors of the first item in the queue
     visited = []                                    # list of nodes visited
-    predecessors = {}                               # key: tuple[int, int], value: tuple[int, int]                     
-    val = 0
+    predecessors = {}                               # key: tuple[int, int], value: tuple[int, int]
     while len(queue) >  0:
         node_coord = queue.pop(0)                   # remove the node from the start of the queue to process it   
         visited.append(node_coord)                 
-        for n in getNeighbor(node_coord, maze):     # queue all its unexplored neighbors (at the end);
+        for n in getNeighbor(node_coord, maze):     # queue all its unexplored neighbors if not already present in predecessors;
             if n not in predecessors.keys():        # n: tuple[int, int] coordinate of neightbor
                 queue.append(n)
                 predecessors[n] = node_coord               
@@ -86,9 +87,9 @@ def getNeighbor(coord, maze):
                           (x+1, y-1), (x+1, y+1)]                      # diagonal bottom left, right
     neighbor = []
     for (l, c) in potential_neighbor:
-        if 0<=l<heigth and 0<=c<width and maze[l][c] != "#":
-            if(maze[l][c]=="_"): neighbor.append(
-                                   getTerminus(p=coord, sf=(l,c), maze=maze))
+        if 0<=l<heigth and 0<=c<width and maze[l][c] != "#":                   # we will only keep the neighbors where we can move on them
+            if(maze[l][c]=="_"): neighbor.append(                                  # if its neighbor is a sliding floor then will only keep the 
+                                   getTerminus(p=coord, sf=(l,c), maze=maze))      #    coordinates of the end point
             else: neighbor.append((l,c))
     return neighbor
 
@@ -105,11 +106,11 @@ def getTerminus(p, sf, maze):
     nextNode = sf[0]+gradient[0], sf[1]+gradient[1] # get the next node coordinate in the same direction
     stop = False                                    # while loop stop condition
     while stop == False:
-        node = maze[nextNode[0]][nextNode[1]]
-        if node == '#':                                                    # if the next vertex is a wall or a door then:
+        node = maze[nextNode[0]][nextNode[1]]                              # we get the character at node coordinates  
+        if node == '#':                                                    # if the next vertex is a wall:
             nextNode = nextNode[0]-gradient[0], nextNode[1]-gradient[1]    #    we come back to the previous node
             stop = True;
-        elif node == '.' or node == 'E':
+        elif node == '.' or node == 'E':                                    
             stop = True
         else: nextNode = nextNode[0]+gradient[0], nextNode[1]+gradient[1]
     return nextNode

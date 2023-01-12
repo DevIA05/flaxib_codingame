@@ -7,30 +7,39 @@ import copy
 # Coding Game -> comment line 15,16, 22, 33, 34
 
 #** Transform the string maze into a list, and retrieves the coordinates of each letter
-#** maze_str: str, 
-#** width:int, heigth:int)-> tuple[list[list[str]], dict[str, tuple[int, int]]]: 
 #** return tuple[list[list[str]], dict[str, tuple[int, int]]] 
 def getMaze(file):
     #width, height = [int(i) for i in input().split()]; 
-    f = open("Hexagonal_Maze_part2/maze/" + file, "r")
-    sh = f.readline()[:-1]; lsh = sh.split(" "); width = int(lsh[0]); height = int(lsh[1]) 
-    width = width * 2
-    letter = {}
-    maze = []
-    for h in range(0, height):
-        ligne = ["#"]*width
-        row = f.readline()[:-1] #input()
-        if(h%2 ==0): s = 0; hexa = 1
-        else: s = 1; hexa = -1
-        for w in range(s, width, 2):
-            index = int((w+hexa)/2)
-            ligne[w] = row[index]
+    f = open("Hexagonal_Maze_part2/maze/" + file, "r")              # Open the connection with the file.
+    sh = f.readline()[:-1];                                         # Get the first line to extract the dimensions of the labyrinth.
+    lsh = sh.split(" "); width = int(lsh[0]); height = int(lsh[1])  # Extract dimension and cast to int. 
+    width = width * 2                                               # We multiply the width by two to correspond to the hexagonal format of the labyrinth.                                                       
+    letter = {}                                                     # Will contain the keys, the doors, the start point and arrival as well as their respective. 
+                                                                    #    coordinates in the object which will contain the labyrinth.
+    maze = []                                                       # Contains the elements composing the labyrinth each character of a line of the file will 
+                                                                    #    be in a list which will then be added to maze.
+    for h in range(0, height):                                      # For each line of the labyrinth:       
+        ligne = ["#"]*width                                           # Here it is purely aesthetic, instead of adding after or before the character "0",
+                                                                      #    we will put it only when it is surrounded by space to move.
+        row = f.readline()[:-1] #input()                              # We retrieve the line without taking the character '\n' ([:-1]).
+        if(h%2 ==0): s = 0; hexa = 1                                  # s corresponds to the value from which we will move in line list to add the characters, 
+        else: s = 1; hexa = -1                                        #    this will allow us to apply a shift every other line of the table containing the labyrinth.
+                                                                      #    s = 0, we will have a shift to the right
+                                                                      #    s = 1, we will have a shift to the left
+                                                                      # hexa with w makes it possible to find the index allowing to move in the line to recover the 
+                                                                      #    current character.
+        
+        for w in range(s, width, 2):                                  # Go through in steps of two to leave a box for the character "0" (as a reminder, we doubled the width)
+            index = int((w+hexa)/2)                                   # Find the index allowing to move in row (containing the characters of the current line). 
+                                                                      #    cast to int to recover the integer part if we start with 0, int((0+1)/2) = int(0.5) = 0
+            ligne[w] = row[index]                                     # Add current character to the list.     
             saveLetter(n = (h, w), ch = row[index], letter = letter)         
-            if(index+hexa not in [-1, width/2]):
-                if(row[index]!= "#" and row[index+hexa]!="#"):
+            if(index+hexa not in [-1, width/2]):                      # Test if we do not leave the range, if we start at 0, we do not need to check the character at position 
+                                                                      #    -1 and if we are at the end we have no character at the position beyond the end.
+                if(row[index]!= "#" and row[index+hexa]!="#"):        # I add it if before or after there is no # character, (if a displacement character is not at side of a wall)
                     ligne[w+hexa] = "0"
-        maze.append(ligne)
-    resp = f.readline(); f.close() 
+        maze.append(ligne)                                            # Add the list containing the characters of the line to maze
+    resp = f.readline(); f.close()                                  # Retrieve the expected response then I close the connection with the file.
     return maze, letter, resp
     #return maze, letter
 

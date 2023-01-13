@@ -50,7 +50,7 @@ def getMaze(file):
 #** maze{list[list[str]]]} represents the labyrinth
 #** start{tuple[int, int]}: starting point coordinates
 # ** return list[tuple[int, int]] and dict{tuple[int, int], tuple[int, int]}
-def bfs(maze, start):
+def bfs(maze, start, e):
     queue = [start]                                 # will contain the unexplored neighbors of the first item in the queue
     visited = []                                    # list of nodes visited
     predecessors = {}                               # key: tuple[int, int], value: tuple[int, int]
@@ -60,7 +60,8 @@ def bfs(maze, start):
         for n in getNeighbor(node_coord, maze):     # queue all its unexplored neighbors if not already present in predecessors;
             if n not in predecessors.keys():        # n: tuple[int, int] coordinate of neightbor
                 queue.append(n)
-                predecessors[n] = node_coord               
+                predecessors[n] = node_coord
+                if e == node_coord: return (visited, predecessors)
     return(visited, predecessors)
 
 #** Saves the coordinates and the name of the keys and door
@@ -148,23 +149,47 @@ def door_freeSpace(maze, door): # list[list[str]], list[tuple[int, int]]
 #** The doors being walls, if we need a key we go to recover it by going back 
 #** to the predecessors.
 #** then we transform the door corresponding to the key into an free space 
-def stepByStep(maze, letter): # list[list[tuple(int, int)]], dict[str, tuple[int, int]] -> list[tuple[int, int]]
-    allTheWay: list[tuple[int, int]] = []
-    keyring: list[str] = ['S'] + sorted([k for k in letter.keys() if k.islower()]) + ["E"]
-    for i in range(0, len(keyring[:-1])):
-        s = letter[keyring[i]][0]; e = letter[keyring[i+1]][0]
-        v, p = bfs(maze = maze, start = s)                          # I get the predecessors from breadth-first search
-        if(letter['E'][0] not in p.keys()):                  # if can't we already access the exit 
-            r = theWayTo(end=e, start=s, p=p)[:-1]              # the doors being walls, if we need a key we go to recover 
-                                                                #   it by going back to the predecessors.
-                                                                #   we do not take the last value which is the end point 
-            allTheWay += r  
-            door_freeSpace(maze, letter[keyring[i+1].upper()])     # we transform the door corresponding to the key into an free space 
-        else:                                                # if we can already access the exit
-            r = theWayTo(end=letter['E'][0], start=s, p=p)
+# def stepByStep(maze, letter): # list[list[tuple(int, int)]], dict[str, tuple[int, int]] -> list[tuple[int, int]]
+#     allTheWay: list[tuple[int, int]] = []
+#     keyring: list[str] = ['S'] + sorted([k for k in letter.keys() if k.islower()]) + ["E"]
+#     for i in range(0, len(keyring[:-1])):
+#         s = letter[keyring[i]][0]; e = letter[keyring[i+1]][0]
+#         v, p = bfs(maze = maze, start = s)                          # I get the predecessors from breadth-first search
+#         if(letter['E'][0] not in p.keys()):                  # if can't we already access the exit 
+#             r = theWayTo(end=e, start=s, p=p)[:-1]              # the doors being walls, if we need a key we go to recover 
+#                                                                 #   it by going back to the predecessors.
+#                                                                 #   we do not take the last value which is the end point 
+#             allTheWay += r  
+#             door_freeSpace(maze, letter[keyring[i+1].upper()])     # we transform the door corresponding to the key into an free space 
+#         else:                                                # if we can already access the exit
+#             r = theWayTo(end=letter['E'][0], start=s, p=p)
+#             allTheWay += r
+#             break;
+#     return allTheWay
+
+def stepByStep(maze, letter):
+    allTheWay = []
+    doors = sorted([d for d in letter.keys() if d.isupper() and d not in ['E', 'S']])
+    s = letter['S'][0]; e = letter['E'][0]
+    v, p = bfs(maze = maze, start = s, e = e) 
+    r = theWayTo(end=e, start=s, p=p)
+    if(len(doors)>0):    
+        for d in range(len(doors),1,-1):
+            if(letter[doors[d-1]][0] not in r)or(doors[d-1].lower() not in letter.keys()): del doors[d-1]
+        door_wall(maze = maze, letter = letter)
+        steps = ['S'] + [d.lower() for d in doors] + ['E']
+        for step in range(0, len(steps)-1):
+            s = letter[steps[step]][0]; e = letter[steps[step+1]][0]
+            v, p = bfs(maze = maze, start = s, e=e)
+            r = theWayTo(end=e, start=s, p=p)[:-1]
             allTheWay += r
-            break;
+            door_freeSpace(maze, letter[steps[step+1].upper()])
+        allTheWay += letter['E']
+    else:
+        allTheWay+=r 
     return allTheWay
+
+
 
 #** Convert path from coordinate to direction
 #** route: list[tuple[int, int]]) 

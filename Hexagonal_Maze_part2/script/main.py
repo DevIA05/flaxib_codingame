@@ -11,7 +11,7 @@ import copy
 import time
 
 ################### CHOOSE A MAZE ###################################
-file = "maze11.txt"
+file = "maze08.txt"
 #####################################################################
 
 #####################################################################
@@ -20,7 +20,7 @@ file = "maze11.txt"
 start = time.perf_counter()
 maze, letter, resp  = getMaze(file=file) 
 original_maze = copy.deepcopy(maze)        
-door_wall(maze = maze, letter = letter)
+# door_wall(maze = maze, letter = letter)
 atw = stepByStep(maze = maze, letter = letter)
 d = coordToLetter(atw)
 myResp = response(direction=d)               
@@ -43,5 +43,5 @@ print("TEMPS:", end="  "); print(f"{round(finish-start, 2)} (s)"); print("")
 print("="*25 + " WRITTING RECORD " + "="*25); print("")
 mazeWithRecord = recordMouvement(maze=original_maze, allTheWay=atw)
 mazeWithRecord_str = printMaze(mazeWithRecord)
-with open('Hexagonal_Maze_part2/maze/Record_'+ file + '.txt','w+') as f:
+with open('Hexagonal_Maze_part2/maze/Record_'+ file,'w+') as f:
     f.write(mazeWithRecord_str)

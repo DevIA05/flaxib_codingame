@@ -158,7 +158,7 @@ def stepByStep(maze, letter): # list[list[tuple(int, int)]], dict[str, tuple[int
                                                                 #   it by going back to the predecessors.
                                                                 #   we do not take the last value which is the end point 
             allTheWay += r  
-            door_freeSpace(maze, letter[keyring[i+1].upper()])     # we transform the door corresponding to the key into an free space 
+            door_freeSpace(maze, letter[keyring[i+1].upper()])      # we transform the door corresponding to the key into an free space 
         else:                                                # if we can already access the exit
             r = theWayTo(end=letter['E'][0], start=s, p=p)
             allTheWay += r

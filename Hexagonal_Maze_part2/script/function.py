@@ -110,9 +110,9 @@ def getTerminus(p, sf, maze):
         if node == '#':                                                    # if the next vertex is a wall:
             nextNode = nextNode[0]-gradient[0], nextNode[1]-gradient[1]     #    we come back to the previous node
             stop = "True"
-        elif node == "_":                
-            nextNode = nextNode[0]+gradient[0], nextNode[1]+gradient[1] 
-        else: stop = "True"  
+        elif node == "_":                                                  # if it's still sliding floor then we go 
+            nextNode = nextNode[0]+gradient[0], nextNode[1]+gradient[1]    #    to the box which is in the continuity of the slope 
+        else: stop = "True"                                                # if it's free space (., keys)
     return nextNode
 
 #** Get route from start to end

@@ -11,7 +11,7 @@ import copy
 import time
 
 ################### CHOOSE A MAZE ###################################
-file = "maze08.txt"
+file = "maze11.txt"
 #####################################################################
 
 #####################################################################
@@ -20,7 +20,7 @@ file = "maze08.txt"
 start = time.perf_counter()
 maze, letter, resp  = getMaze(file=file) 
 original_maze = copy.deepcopy(maze)        
-# door_wall(maze = maze, letter = letter)
+door_wall(maze = maze, letter = letter)
 atw = stepByStep(maze = maze, letter = letter)
 d = coordToLetter(atw)
 myResp = response(direction=d)               

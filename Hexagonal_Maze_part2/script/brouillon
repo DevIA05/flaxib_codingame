@@ -1,0 +1,14 @@
+# sets the working directory at the level of the file's parent ######
+import sys                                                          #
+from pathlib import Path                                            #
+folder = Path(__file__).parent                                      #
+sys.path.insert(0, str(folder))                                     #
+#####################################################################
+
+# IMPORT
+from function import *
+
+file = "maze11.txt"
+maze, letter, resp  = getMaze(file=file)
+atw = stepByStep(maze = maze, letter = letter) 
+# getTerminus(p = (7,11), sf=(8,10), maze=maze)

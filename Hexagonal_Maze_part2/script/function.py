@@ -106,13 +106,14 @@ def getTerminus(p, sf, maze):
     nextNode = sf[0]+gradient[0], sf[1]+gradient[1] # get the next node coordinate in the same direction
     stop = False                                    # while loop stop condition
     while stop == False:
-        node = maze[nextNode[0]][nextNode[1]]                              # we get the character at node coordinates  
+        node = maze[nextNode[0]][nextNode[1]]                              # Get the character at coordinates  
         if node == '#':                                                    # if the next vertex is a wall:
-            nextNode = nextNode[0]-gradient[0], nextNode[1]-gradient[1]    #    we come back to the previous node
-            stop = True;
-        elif node == '.' or node == 'E':                                    
-            stop = True
-        else: nextNode = nextNode[0]+gradient[0], nextNode[1]+gradient[1]
+            nextNode = nextNode[0]-gradient[0], nextNode[1]-gradient[1]     #    we come back to the previous node
+            stop = "True"
+        elif node == "_":                # if it's a free space or keys or exit                   
+            nextNode = nextNode[0]+gradient[0], nextNode[1]+gradient[1]                                                   #     we keep the current coordinates
+        else: stop = "True"
+                                                                           #    to the box which is in the continuity of the slope  
     return nextNode
 
 #** Get route from start to end
@@ -150,10 +151,9 @@ def door_freeSpace(maze, door): # list[list[str]], list[tuple[int, int]]
 def stepByStep(maze, letter): # list[list[tuple(int, int)]], dict[str, tuple[int, int]] -> list[tuple[int, int]]
     allTheWay: list[tuple[int, int]] = []
     keyring: list[str] = ['S'] + sorted([k for k in letter.keys() if k.islower()]) + ["E"]
-    maze[letter['S'][0][0]][letter['S'][0][1]] = "."
     for i in range(0, len(keyring[:-1])):
         s = letter[keyring[i]][0]; e = letter[keyring[i+1]][0]
-        v, p = bfs(maze, start = s)                          # I get the predecessors from breadth-first search
+        v, p = bfs(maze = maze, start = s)                          # I get the predecessors from breadth-first search
         if(letter['E'][0] not in p.keys()):                  # if can't we already access the exit 
             r = theWayTo(end=e, start=s, p=p)[:-1]              # the doors being walls, if we need a key we go to recover 
                                                                 #   it by going back to the predecessors.

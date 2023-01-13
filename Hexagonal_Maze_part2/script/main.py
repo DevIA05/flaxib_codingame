@@ -5,25 +5,27 @@ folder = Path(__file__).parent                                      #
 sys.path.insert(0, str(folder))                                     #
 #####################################################################
 
+# IMPORT
 from function import *
 import copy
+import time
 
-# pick up the labyrinth to go through it
-file = "maze01.txt"
+################### CHOOSE A MAZE ###################################
+file = "maze11.txt"
+#####################################################################
 
 #####################################################################
 ########################## MAIN #####################################
 #####################################################################
-# Transform the str maze into a list adapted to the hexagonal format
-# and also returns a list of keys, gate, entry point and exit point
-maze, letter, resp  = getMaze(file=file)
-original_maze = copy.deepcopy(maze) # comment in coding game
+start = time.perf_counter()
+maze, letter, resp  = getMaze(file=file) 
+original_maze = copy.deepcopy(maze)        
 door_wall(maze = maze, letter = letter)
 atw = stepByStep(maze = maze, letter = letter)
 d = coordToLetter(atw)
-myResp = response(direction=d)
-ca = checkAnswer(resp=resp, myResp=myResp)
-
+myResp = response(direction=d)               
+ca = checkAnswer(resp=resp, myResp=myResp) 
+finish = time.perf_counter()
 #####################################################################
 ######################### PRINT RESULT ##############################
 #####################################################################
@@ -34,7 +36,7 @@ print("\n")
 print("Bonne réponse"); print(resp);
 print("")
 print("Réussite: ", end=""); print(ca); print("")
-
+print("TEMPS:", end="  "); print(f"{round(finish-start, 2)} (s)"); print("")
 #####################################################################
 ######################## WRITTING RECORD ############################
 #####################################################################
